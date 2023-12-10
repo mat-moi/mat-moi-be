@@ -1,0 +1,32 @@
+version: '3'
+
+volumes:
+  mysql_data:
+
+services:
+  mysql:
+    image: mysql:8.0
+    cap_add:
+      - SYS_NICE
+    ports:
+      - '3307:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql:rw
+    environment:
+      - 'MYSQL_DATABASE=${RDS_DB_NAME}'
+      - 'MYSQL_ROOT_PASSWORD=${RDS_PASSWORD}'
+
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    ports:
+      - '3000:3000'
+    command: npm run start:dev
+    volumes:
+      - ./:/app/
+      - /app/node_modules
